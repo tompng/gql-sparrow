@@ -55,7 +55,7 @@ function typeToTS(type, nonnull = false) {
 function dataTypes() {
   const code = []
   const scalarNames = ['TypeID', ...scalarDefinitions.map(d => 'Type' + d.name.value)]
-  code.push(`import { ${scalarNames.join(', ')} } from ./scalarTypes.ts`)
+  code.push(`import { ${scalarNames.join(', ')} } from "./scalarTypes.ts"`)
 
   for (const definition of enumDefinitions) {
     const values = definition.values.map(type => JSON.stringify(type.name.value))
@@ -114,12 +114,12 @@ function queryTypes() {
     code.push(
       `export type ${typeName} = ${standaloneName} | Readonly<${standaloneName}>[]`,
       '  | (',
-      `    { [key in keyof ${baseName}]?: key extends '*' ? true : ${baseName}[key] | ${aliasQueryName} }`,
+      `    { [key in keyof ${baseName}]?: key extends "*" ? true : ${baseName}[key] | ${aliasQueryName} }`,
       `    & { [key: string]: ${aliasQueryName} | NonAliasQuery }`,
       '  )'
     )
     code.push(
-      `export type ${standaloneName} = ${[...standaloneFieldNames].join(' | ') || 'never'}`
+      `export type ${standaloneName} = ${[...standaloneFieldNames].map(n => JSON.stringify(n)).join(' | ') || 'never'}`
     )
     code.push(
       `export type ${aliasQueryName} =`,
