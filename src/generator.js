@@ -24,11 +24,12 @@ for (definition of schema.definitions) {
       objectDefinitions.push(definition)
       break
     default:
-      console.error(definition)
+      // console.error(definition)
       break
   }
 }
 const queryDefinition = objectDefinitions.find(d => d.name.value === 'Query')
+const objectTypeNames = new Set([...objectDefinitions.map(d => d.name.value)])
 function typeNameToTS(name) {
   switch(name) {
     case 'Boolean': return 'boolean'
@@ -58,11 +59,11 @@ function dataTypes() {
 
   for (const definition of enumDefinitions) {
     const values = definition.values.map(type => JSON.stringify(type.name.value))
-    code.push(`type Type${definition.name.value} = ${values.join(' | ')}`)
+    code.push(`export type Type${definition.name.value} = ${values.join(' | ')}`)
   }
   for (const definition of unionDefinitions) {
     const values = definition.types.map(type => 'Type' + type.name.value)
-    code.push(`type Type${definition.name.value} = ${values.join(' | ')}`)
+    code.push(`export type Type${definition.name.value} = ${values.join(' | ')}`)
   }
   for (definition of objectDefinitions) {
     const typeName = `Type${definition.name.value}`
@@ -70,13 +71,80 @@ function dataTypes() {
       `  ${field.name.value}: ${typeToTS(field.type)}`
     )
     code.push(
-      `interface ${typeName} {`,
+      `export interface ${typeName} {`,
       ...fieldDefinitions,
       '}'
     )
   }
   return code.join("\n")
 }
+function extractNamedType(type) {
+  if (type.kind === 'NonNullType' || type.kind === 'ListType') return extractNamedType(type.type)
+  if (type.kind !== 'NamedType') return
+  const name = type.name.value
+  if (objectTypeNames.has(name)) return `Type${name}Query`
+}
 
+function queryTypes() {
+  const code = []
+  code.push('type NonAliasQuery = true | false | string | string[] | ({ field?: undefined } & { [key: string]: any })')
+  for (definition of objectDefinitions) {
+    const name = definition.name.value
+    const typeName = `Type${name}Query`
+    const baseName = `Type${name}QueryBase`
+    const aliasQueryName = `Type${name}AliasFieldQuery`
+    const standaloneName = `Type${name}StandaloneFields`
+    const standaloneFieldNames = new Set()
+    const fieldQueryType = {}
+    const fieldQueryParams = {}
+    for (const f of definition.fields) {
+      const name = f.name.value
+      const attrs = []
+      const queryType = extractNamedType(f.type)
+      paramsFields = f.arguments.map(a => `${a.name.value}: ${typeToTS(a.type)}`).join('; ')
+      const paramsType = `{ ${paramsFields} }`
+      const paramsRequired = !f.arguments.every(a => a.type.kind !== 'NonNullType')
+      if (!paramsRequired) standaloneFieldNames.add(name)
+      if (queryType) attrs.push(`query?: ${queryType}`)
+      attrs.push(`params${paramsRequired ? '' : '?'}: ${paramsType}`)
+      fieldQueryType[name] = queryType
+      fieldQueryParams[name] = attrs
+    }
+    const acceptWildcard = standaloneFieldNames.size === definition.fields.length
+    code.push(
+      `export type ${typeName} = ${standaloneName} | Readonly<${standaloneName}>[]`,
+      '  | (',
+      `    { [key in keyof ${baseName}]?: key extends '*' ? true : ${baseName}[key] | ${aliasQueryName} }`,
+      `    & { [key: string]: ${aliasQueryName} | NonAliasQuery }`,
+      '  )'
+    )
+    code.push(
+      `export type ${standaloneName} = ${[...standaloneFieldNames].join(' | ') || 'never'}`
+    )
+    code.push(
+      `export type ${aliasQueryName} =`,
+      definition.fields.map(f =>
+        `  | { ${[`field: "${f.name.value}"`, ...fieldQueryParams[f.name.value]].join('; ')} }`
+      ).join("\n") || 'never'
+    )
+    code.push(`export interface ${baseName} {`)
+    for (const field of definition.fields) {
+      const name = field.name.value
+      const types = []
+      if (standaloneFieldNames.has(name)) {
+        types.push('true')
+        const qtype = fieldQueryType[name]
+        if (qtype) types.push(qtype)
+      }
+      const qparams = fieldQueryParams[name]
+      types.push(`{ field: never; ${qparams.join('; ')} }`)
+      code.push(`  ${name}: ${types.join(' | ')}`)
+    }
+    if (acceptWildcard) code.push('  "*": true')
+    code.push('}')
+  }
+  return code.join("\n")
+}
 console.log(dataTypes())
-console.error(queryDefinition)
+console.log(queryTypes())
+
