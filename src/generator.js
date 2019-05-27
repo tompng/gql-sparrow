@@ -28,7 +28,7 @@ for (definition of schema.definitions) {
       break
   }
 }
-const queryDefinition = objectDefinitions.find(d => d.name.value === 'Query')
+const rootDefinition = objectDefinitions.find(d => d.name.value === 'Query')
 const objectTypeNames = new Set([...objectDefinitions.map(d => d.name.value)])
 function typeNameToTS(name) {
   switch(name) {
@@ -78,11 +78,27 @@ function dataTypes() {
   }
   return code.join("\n")
 }
+function isTypeMultiple(type) {
+  if (type.kind === 'NonNullType') return isTypeMultiple(type.type)
+  return type.kind === 'ListType'
+}
 function extractNamedType(type) {
   if (type.kind === 'NonNullType' || type.kind === 'ListType') return extractNamedType(type.type)
   if (type.kind !== 'NamedType') return
   const name = type.name.value
   if (objectTypeNames.has(name)) return `Type${name}Query`
+}
+function fieldParamsRequired(field) {
+  return !field.arguments.every(a => a.type.kind !== 'NonNullType')
+}
+function fieldQueryParams(field) {
+  const paramsFields = field.arguments.map(a => `${a.name.value}: ${typeToTS(a.type)}`).join('; ')
+  const paramsType = `{ ${paramsFields} }`
+  const queryType = extractNamedType(field.type)
+  const attrs = []
+  if (queryType) attrs.push(`query?: ${queryType}`)
+  attrs.push(`params${fieldParamsRequired(field) ? '' : '?'}: ${paramsType}`)
+  return attrs
 }
 
 function queryTypes() {
@@ -95,20 +111,8 @@ function queryTypes() {
     const aliasQueryName = `Type${name}AliasFieldQuery`
     const standaloneName = `Type${name}StandaloneFields`
     const standaloneFieldNames = new Set()
-    const fieldQueryType = {}
-    const fieldQueryParams = {}
     for (const f of definition.fields) {
-      const name = f.name.value
-      const attrs = []
-      const queryType = extractNamedType(f.type)
-      paramsFields = f.arguments.map(a => `${a.name.value}: ${typeToTS(a.type)}`).join('; ')
-      const paramsType = `{ ${paramsFields} }`
-      const paramsRequired = !f.arguments.every(a => a.type.kind !== 'NonNullType')
-      if (!paramsRequired) standaloneFieldNames.add(name)
-      if (queryType) attrs.push(`query?: ${queryType}`)
-      attrs.push(`params${paramsRequired ? '' : '?'}: ${paramsType}`)
-      fieldQueryType[name] = queryType
-      fieldQueryParams[name] = attrs
+      if (!fieldParamsRequired(f)) standaloneFieldNames.add(f.name.value)
     }
     const acceptWildcard = standaloneFieldNames.size === definition.fields.length
     code.push(
@@ -124,7 +128,7 @@ function queryTypes() {
     code.push(
       `export type ${aliasQueryName} =`,
       definition.fields.map(f =>
-        `  | { ${[`field: "${f.name.value}"`, ...fieldQueryParams[f.name.value]].join('; ')} }`
+        `  | { ${[`field: "${f.name.value}"`, ...fieldQueryParams(f)].join('; ')} }`
       ).join("\n") || 'never'
     )
     code.push(`export interface ${baseName} {`)
@@ -133,18 +137,42 @@ function queryTypes() {
       const types = []
       if (standaloneFieldNames.has(name)) {
         types.push('true')
-        const qtype = fieldQueryType[name]
+        const qtype = extractNamedType(field.type)
         if (qtype) types.push(qtype)
       }
-      const qparams = fieldQueryParams[name]
+      const qparams = fieldQueryParams(field)
       types.push(`{ field: never; ${qparams.join('; ')} }`)
       code.push(`  ${name}: ${types.join(' | ')}`)
     }
     if (acceptWildcard) code.push('  "*": true')
     code.push('}')
   }
-  return code.join("\n")
+  return code.join('\n')
+}
+function rootQueryTypes(rootDefinition) {
+  const code = []
+  function camelize(name) {
+    return name.split('_').map(a => a[0].toUpperCase() + a.substr(1)).join('')
+  }
+  const rootFields = []
+  for (const field of rootDefinition.fields) {
+    const name = field.name.value
+    const queryName = `TypeRoot${camelize(name)}Query`
+    rootFields.push({ field: name, query: queryName })
+    const attr = [
+      `field: "${name}"`,
+      ...fieldQueryParams(field),
+      `_meta?: { data: ${extractNamedType(field.type)}${isTypeMultiple(field.type) ? '[]' : ''} }`
+    ]
+    code.push(`export interface ${queryName} { ${attr.join('; ')} }`)
+  }
+  code.push(
+    'export interface TypeRootFields {',
+    ...rootFields.map(({ field, query }) => `  ${field}: ${query}`),
+    '}'
+  )
+  return code.join('\n')
 }
 console.log(dataTypes())
-console.log(queryTypes())
-
+console.log(queryTypes(rootDefinition))
+console.log(rootQueryTypes(rootDefinition))
