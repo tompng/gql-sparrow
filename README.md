@@ -66,3 +66,18 @@ const graphqlQuery = buildQuery(query)
 //   }
 // }
 ```
+
+```
+// Warns you if you specify an undefined field.
+const article = await executeQuery({ field: 'article', params: { id: 1 }, query: {
+  id: true,
+  titllllle: true,
+  comments: {
+    user: ['id', 'name'],
+    text: true,
+    creeeeeeatedAt: true
+  }
+})
+article.title // compile error
+// typeof article is { error: { extraFields: 'titllllle' | 'creeeeeeatedAt' } }
+```
