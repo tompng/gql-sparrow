@@ -189,7 +189,7 @@ function rootQueryTypes(rootDefinition: GQLObjectDefinition) {
 }
 if (!rootDefinition) throw '`type Query` not found'
 console.log(`
-import { DataTypeFromRequest } from '[ts_gql_tmp(may change)]/DataType'
+import { DataTypeFromRequest } from '[gql_ts_tmp(may change)]/DataType'
 type Values<T> = T extends { [K in keyof T]: infer U } ? U : never
 export type DataTypeFromRootQuery<RQ extends Values<TypeRootFields>> =
   DataTypeFromRequest<TypeRootFields[RQ['field']], RQ>

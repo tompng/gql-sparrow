@@ -26,7 +26,7 @@ const query = {
 ## 3. Write glue code
 ```ts
 import { DataTypeFromRootQuery, TypeRootQuery } from 'bar/generated_types'
-import { buidQuery } from '[ts_gql_tmp(may change)]/buildQuery'
+import { buidQuery } from '[gql_ts_tmp(may change)]/buildQuery'
 async function executeQuery<Q extends TypeRootQuery>(query: Q) {
   const graphqlQuery = buildQuery(query)
   const result = await executeGraphQLByYourFavoriteLibrary(graphqlQuery)
@@ -67,7 +67,7 @@ const graphqlQuery = buildQuery(query)
 // }
 ```
 
-```
+```ts
 // Warns you if you specify an undefined field.
 const article = await executeQuery({ field: 'article', params: { id: 1 }, query: {
   id: true,
