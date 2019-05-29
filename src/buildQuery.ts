@@ -44,19 +44,21 @@ function partialQueryBuilder(name: string | null, query: Query, qstring: string[
     fieldHeaders.push(`${name || field}`)
   }
   if (params) fieldHeaders.push(`(${paramsToString(params, pretty, false)})`)
+  if (!attrQuery || attrQuery === true) {
+    qstring.push(indent + fieldHeaders.join(''))
+    return
+  }
   qstring.push(indent + fieldHeaders.join('') + space + '{')
-  if (attrQuery && attrQuery !== true) {
-    if (typeof attrQuery === 'string') {
-      qstring.push(nextIndent + attrQuery)
-    } else if (Array.isArray(attrQuery)) {
-      attrQuery.forEach(f => qstring.push(nextIndent + f))
-    } else {
-      for (const key in attrQuery) {
-        const subQueryValue = attrQuery[key]
-        const isQuery = (typeof subQueryValue === 'object') && (('field' in subQueryValue) || ('query' in subQueryValue) || ('params' in subQueryValue))
-        const subQuery: Query = isQuery ? subQueryValue as Query : { query: subQueryValue } as Query
-        partialQueryBuilder(key, subQuery, qstring, indentSize + 1, pretty)
-      }
+  if (typeof attrQuery === 'string') {
+    qstring.push(nextIndent + attrQuery)
+  } else if (Array.isArray(attrQuery)) {
+    attrQuery.forEach(f => qstring.push(nextIndent + f))
+  } else {
+    for (const key in attrQuery) {
+      const subQueryValue = attrQuery[key]
+      const isQuery = (typeof subQueryValue === 'object') && (('field' in subQueryValue) || ('query' in subQueryValue) || ('params' in subQueryValue))
+      const subQuery: Query = isQuery ? subQueryValue as Query : { query: subQueryValue } as Query
+      partialQueryBuilder(key, subQuery, qstring, indentSize + 1, pretty)
     }
   }
   qstring.push(indent + '}')
