@@ -1,12 +1,22 @@
-const gql = require('graphql-tag')
-const fs = require('fs')
+import gql from 'graphql-tag'
+import * as fs from 'fs'
+import {
+  GQLSchema,
+  GQLScalarDefinition,
+  GQLObjectDefinition,
+  GQLEnumDefinition,
+  GQLUnionDefinition,
+  GQLType,
+  GQLField
+} from './types/graphql-tag'
+
 const schemaString = fs.readFileSync('test/schema.graphql').toString()
-const schema = gql(schemaString)
-const scalarDefinitions = []
-const objectDefinitions = []
-const enumDefinitions = []
-const unionDefinitions = []
-for (definition of schema.definitions) {
+const schema = gql(schemaString) as GQLSchema
+const scalarDefinitions: GQLScalarDefinition[] = []
+const objectDefinitions: GQLObjectDefinition[] = []
+const enumDefinitions: GQLEnumDefinition[] = []
+const unionDefinitions: GQLUnionDefinition[] = []
+for (const definition of schema.definitions) {
   switch (definition.kind) {
     case 'ScalarTypeDefinition':
       scalarDefinitions.push(definition)
@@ -30,7 +40,7 @@ for (definition of schema.definitions) {
 }
 const rootDefinition = objectDefinitions.find(d => d.name.value === 'Query')
 const objectTypeNames = new Set([...objectDefinitions.map(d => d.name.value)])
-function typeNameToTS(name) {
+function typeNameToTS(name: string) {
   switch(name) {
     case 'Boolean': return 'boolean'
     case 'String': return 'string'
@@ -41,7 +51,7 @@ function typeNameToTS(name) {
   }
 }
 
-function typeToTS(type, nonnull = false) {
+function typeToTS(type: GQLType, nonnull = false): string {
   switch(type.kind) {
     case 'NamedType':
       return typeNameToTS(type.name.value) + (nonnull ? '' : ' | null')
@@ -52,7 +62,7 @@ function typeToTS(type, nonnull = false) {
   }
 }
 function dataTypes() {
-  const code = []
+  const code: string[] = []
   const scalarNames = ['TypeID', ...scalarDefinitions.map(d => 'Type' + d.name.value)]
   code.push(`import { ${scalarNames.join(', ')} } from "./scalarTypes.ts"`)
 
@@ -64,7 +74,7 @@ function dataTypes() {
     const values = definition.types.map(type => 'Type' + type.name.value)
     code.push(`export type Type${definition.name.value} = ${values.join(' | ')}`)
   }
-  for (definition of objectDefinitions) {
+  for (const definition of objectDefinitions) {
     const typeName = `Type${definition.name.value}`
     const fieldDefinitions = definition.fields.map(field =>
       `  ${field.name.value}: ${typeToTS(field.type)}`
@@ -78,34 +88,35 @@ function dataTypes() {
   }
   return code.join("\n")
 }
-function isTypeMultiple(type) {
+function isTypeMultiple(type: GQLType): boolean {
   if (type.kind === 'NonNullType') return isTypeMultiple(type.type)
   return type.kind === 'ListType'
 }
-function extractNamedType(type) {
+
+function extractNamedType(type: GQLType) {
   if (type.kind === 'NonNullType' || type.kind === 'ListType') return extractNamedType(type.type)
   if (type.kind !== 'NamedType') return
   const name = type.name.value
   if (objectTypeNames.has(name)) return `Type${name}`
 }
-function fieldParamsRequired(field) {
+function fieldParamsRequired(field: GQLField) {
   return !field.arguments.every(a => a.type.kind !== 'NonNullType')
 }
-function fieldQueryParams(field) {
+function fieldQueryParams(field: GQLField) {
   const paramsFields = field.arguments.map(a => `${a.name.value}: ${typeToTS(a.type)}`).join('; ')
   const paramsType = `{ ${paramsFields} }`
   const objectTypeName = extractNamedType(field.type)
   const queryType = objectTypeName ? objectTypeName + 'Query' : 'true'
-  const attrs = []
+  const attrs: string[] = []
   if (queryType) attrs.push(`query?: ${queryType}`)
   attrs.push(`params${fieldParamsRequired(field) ? '' : '?'}: ${paramsType}`)
   return attrs
 }
 
 function queryTypes() {
-  const code = []
+  const code: string[] = []
   code.push('type NonAliasQuery = true | false | string | string[] | ({ field?: undefined } & { [key: string]: any })')
-  for (definition of objectDefinitions) {
+  for (const definition of objectDefinitions) {
     const name = definition.name.value
     const typeName = `Type${name}Query`
     const baseName = `Type${name}QueryBase`
@@ -135,7 +146,7 @@ function queryTypes() {
     code.push(`export interface ${baseName} {`)
     for (const field of definition.fields) {
       const name = field.name.value
-      const types = []
+      const types: string[] = []
       if (standaloneFieldNames.has(name)) {
         types.push('true')
         const objectTypeName = extractNamedType(field.type)
@@ -150,12 +161,12 @@ function queryTypes() {
   }
   return code.join('\n')
 }
-function rootQueryTypes(rootDefinition) {
-  const code = []
-  function camelize(name) {
+function rootQueryTypes(rootDefinition: GQLObjectDefinition) {
+  const code: string[] = []
+  function camelize(name: string) {
     return name.split('_').map(a => a[0].toUpperCase() + a.substr(1)).join('')
   }
-  const rootFields = []
+  const rootFields: { field: string; query: string }[] = []
   for (const field of rootDefinition.fields) {
     const name = field.name.value
     const queryName = `TypeRoot${camelize(name)}Query`
@@ -175,5 +186,5 @@ function rootQueryTypes(rootDefinition) {
   return code.join('\n')
 }
 console.log(dataTypes())
-console.log(queryTypes(rootDefinition))
-console.log(rootQueryTypes(rootDefinition))
+console.log(queryTypes())
+if (rootDefinition) console.log(rootQueryTypes(rootDefinition))
