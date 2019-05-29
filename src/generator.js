@@ -39,7 +39,6 @@ function typeNameToTS(name) {
     case 'Null': return 'null'
     default: return `Type${name}`
   }
-  when 
 }
 
 function typeToTS(type, nonnull = false) {
@@ -73,6 +72,7 @@ function dataTypes() {
     code.push(
       `export interface ${typeName} {`,
       ...fieldDefinitions,
+      `  _meta?: { query: ${typeName}Query }`,
       '}'
     )
   }
@@ -86,7 +86,7 @@ function extractNamedType(type) {
   if (type.kind === 'NonNullType' || type.kind === 'ListType') return extractNamedType(type.type)
   if (type.kind !== 'NamedType') return
   const name = type.name.value
-  if (objectTypeNames.has(name)) return `Type${name}Query`
+  if (objectTypeNames.has(name)) return `Type${name}`
 }
 function fieldParamsRequired(field) {
   return !field.arguments.every(a => a.type.kind !== 'NonNullType')
@@ -94,7 +94,8 @@ function fieldParamsRequired(field) {
 function fieldQueryParams(field) {
   const paramsFields = field.arguments.map(a => `${a.name.value}: ${typeToTS(a.type)}`).join('; ')
   const paramsType = `{ ${paramsFields} }`
-  const queryType = extractNamedType(field.type)
+  const objectTypeName = extractNamedType(field.type)
+  const queryType = objectTypeName ? objectTypeName + 'Query' : 'true'
   const attrs = []
   if (queryType) attrs.push(`query?: ${queryType}`)
   attrs.push(`params${fieldParamsRequired(field) ? '' : '?'}: ${paramsType}`)
@@ -137,8 +138,8 @@ function queryTypes() {
       const types = []
       if (standaloneFieldNames.has(name)) {
         types.push('true')
-        const qtype = extractNamedType(field.type)
-        if (qtype) types.push(qtype)
+        const objectTypeName = extractNamedType(field.type)
+        if (objectTypeName) types.push(objectTypeName + 'Query')
       }
       const qparams = fieldQueryParams(field)
       types.push(`{ field: never; ${qparams.join('; ')} }`)
