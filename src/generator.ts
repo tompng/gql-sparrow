@@ -10,7 +10,9 @@ import {
   GQLField
 } from './types/graphql-tag'
 
-const schemaString = fs.readFileSync('test/schema.graphql').toString()
+const filename = process.argv.length >= 3 ? process.argv[2] : null
+if (!filename) throw 'No input schema file.'
+const schemaString = fs.readFileSync(filename).toString()
 const schema = gql(schemaString) as GQLSchema
 const scalarDefinitions: GQLScalarDefinition[] = []
 const objectDefinitions: GQLObjectDefinition[] = []
@@ -185,6 +187,13 @@ function rootQueryTypes(rootDefinition: GQLObjectDefinition) {
   )
   return code.join('\n')
 }
+if (!rootDefinition) throw '`type Query` not found'
+console.log(`
+import { DataTypeFromRequest } from './DataType'
+type Values<T> = T extends { [K in keyof T]: infer U } ? U : never
+export type DataTypeFromRootQuery<RQ extends Values<TypeRootFields>> =
+  DataTypeFromRequest<TypeRootFields[RQ['field']], RQ>
+`)
 console.log(dataTypes())
 console.log(queryTypes())
-if (rootDefinition) console.log(rootQueryTypes(rootDefinition))
+console.log(rootQueryTypes(rootDefinition))
