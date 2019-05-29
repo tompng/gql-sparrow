@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "prepare": "tsc",
+    "build": "tsc"
+  },
   "dependencies": {
     "graphql": "^14.2.1",
     "graphql-tag": "^2.10.1",
