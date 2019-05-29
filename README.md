@@ -9,14 +9,14 @@
 ```ts
 const query = {
   field: 'feed',
-  params: { foo: 'bar' }
+  params: { foo: 'bar' },
   query: {
     id: true,
     author: 'name',
-    Title: { field: 'title' }
+    Title: { field: 'title' },
     Comments: {
       field: 'comments',
-      params: { userId: 123 }
+      params: { userId: 123 },
       query: ['id', 'text']
     }
   }
@@ -37,7 +37,7 @@ async function executeQuery<Q extends TypeRootQuery>(query: Q) {
 ```ts
 const result = await executeQuery(query)
 result.author // => { name: string }
-const article = await executeQuery({ field: 'article', params: { id: 1 }, query: ['id', 'title'])
+const article = await executeQuery({ field: 'article', params: { id: 1 }, query: ['id', 'title'] })
 article.id // => number
 article.title // => string
 article.author // => compile error
@@ -55,9 +55,14 @@ const graphqlQuery = buildQuery(query)
 // {
 //   feed(foo: "bar") {
 //     id
-//     author { name }
+//     author {
+//       name
+//     }
 //     Title: title
-//     Comments: comments(userId: 123) { id, text }
+//     Comments: comments(userId: 123) {
+//       id
+//       text
+//     }
 //   }
 // }
 ```
