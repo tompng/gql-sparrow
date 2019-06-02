@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "generate": "typed-gqlbuilder-gen"
+  },
+  "dependencies": {
+    "typed-gqlbuilder": "../dist/"
+  }
+}

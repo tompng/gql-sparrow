@@ -1,4 +1,5 @@
 {
+  "name": "typed-gqlbuilder",
   "scripts": {
     "prepare": "tsc",
     "build": "tsc"

@@ -1,0 +1,65 @@
+scalar DateTime
+scalar Location
+
+type Query {
+  feed: [Post!]!
+  searchPosts(keyword: String): [Post!]!
+  post(id: ID!): Post
+}
+
+type Mutation {
+  signup(email: String!, name: String): User!
+  createDraft(title: String!, content: String, location: Location): Post!
+  deletePost(id: ID!): Post
+  publish(id: ID!): Post
+}
+
+type Post {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  publishedAt: DateTime
+  title: String!
+  content: String
+  author: User!
+  location: Location
+  foobar(id: ID!): String!
+}
+
+enum Color {
+  Red
+  Green
+  Blue
+  Black
+}
+
+type User {
+  id: ID!
+  email: String!
+  name: String
+  posts: [Post!]!
+  favoriteColor: Color!
+  nextFavoriteColor: Color
+  favoriteAnimal: Animal!
+}
+
+interface AnimalBase {
+  id: ID!
+  name: String!
+}
+type MarineAnimal implements AnimalBase {
+  id: ID!
+  name: String!
+  numFins: Int
+}
+type LandAnimal implements AnimalBase {
+  id: ID!
+  name: String!
+  numLegs: Int
+}
+type FlyingAnimal implements AnimalBase {
+  id: ID!
+  name: String!
+  numWings: Int
+}
+union Animal = MarineAnimal | LandAnimal | FlyingAnimal

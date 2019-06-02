@@ -1,0 +1,10 @@
+{
+  "name": "typed-gqlbuilder",
+  "bin": {
+    "typed-gqlbuilder-gen": "./bin/typed-gqlbuilder-gen",
+  },
+  "dependencies": {
+    "graphql": "^14.2.1",
+    "graphql-tag": "^2.10.1"
+  }
+}
