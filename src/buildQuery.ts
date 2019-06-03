@@ -1,17 +1,14 @@
-type Query = {
-  field?: string
-  query?: true | string | string[] | AttributeQuery
-  params?: any
-}
-
+type QueryValue = true | string | Readonly<string[]> | AttributeQuery
+type AttributeQueryValue = QueryValue | Query
+type Query = { field?: string; query?: QueryValue; params?: any }
 type AttributeQuery = { [key: string]: AttributeQueryValue }
-type AttributeQueryValue = true | string | string[] | Query | AttributeQuery
-
 interface RootQuery {
   field: string
   query: Exclude<Query['query'], undefined>
   params?: any
 }
+
+type TrueIsArrayType = (arg: any) => arg is Readonly<any[]> // to avoid isArray bug in ts 3.4.5
 
 function paramsToString(params: any, pretty: boolean = true, brace: boolean = true) {
   const space = pretty ? ' ' : ''
@@ -51,7 +48,7 @@ function partialQueryBuilder(name: string | null, query: Query, qstring: string[
   qstring.push(indent + fieldHeaders.join('') + space + '{')
   if (typeof attrQuery === 'string') {
     qstring.push(nextIndent + attrQuery)
-  } else if (Array.isArray(attrQuery)) {
+  } else if ((Array.isArray as TrueIsArrayType)(attrQuery)) {
     attrQuery.forEach(f => qstring.push(nextIndent + f))
   } else {
     for (const key in attrQuery) {
