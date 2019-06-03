@@ -3,7 +3,9 @@
   "scripts": {
     "prepare": "tsc",
     "build": "tsc",
-    "generate": "typed-gqlbuilder-gen test/schema.graphql test/generated/types.ts"
+    "generate": "typed-gqlbuilder-gen",
+    "ts-type-check": "tsc --strict --lib es2017 --noEmit",
+    "test": "test/test.sh"
   },
   "dependencies": {
     "@types/node": "*",
