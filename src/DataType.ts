@@ -28,21 +28,21 @@ type DataTypeExtractFromQueryHash<BaseType, QueryType> = '*' extends keyof Query
 
 type _DataTypePickField<BaseType, Key, SubQuery> =
   SubQuery extends { field: infer N, query?: infer Q }
-    ? (
-        N extends keyof BaseType
-        ? (
-            IsAnyCompareLeftType extends Q
-            ? DataTypeExtractField<BaseType, N>
-            : DataTypeFromQuery<BaseType[N], Q>)
-        : ExtraFieldErrorType
-      )
-    : (
+  ? (
+      N extends keyof BaseType
+      ? (
+          IsAnyCompareLeftType extends Q
+          ? DataTypeExtractField<BaseType, N>
+          : DataTypeFromQuery<BaseType[N], Q>)
+      : ExtraFieldErrorType
+    )
+  : (
       Key extends keyof BaseType
-        ? (SubQuery extends true
-          ? DataTypeExtractField<BaseType, Key>
-          : DataTypeFromQuery<BaseType[Key], SubQuery>)
-        : ExtraFieldErrorType
-      )
+      ? (SubQuery extends true | { query?: true | never; params: any }
+        ? DataTypeExtractField<BaseType, Key>
+        : DataTypeFromQuery<BaseType[Key], SubQuery extends { query: infer Q } ? Q : SubQuery>)
+      : ExtraFieldErrorType
+    )
 
 type _DataTypeFromQuery<BaseType, QueryType> = QueryType extends keyof BaseType | '*'
   ? DataTypeExtractFieldsFromQuery<BaseType, QueryType>

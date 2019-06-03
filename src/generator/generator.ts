@@ -118,11 +118,12 @@ export class Generator {
 
   fieldQueryParams(field: GQLField) {
     const paramsFields = field.arguments.map(a => `${a.name.value}: ${typeToTS(a.type)}`).join('; ')
-    const paramsType = `{ ${paramsFields} }`
     const objectTypeName = this.extractNamedType(field.type)
-    const queryType = objectTypeName ? objectTypeName + 'Query' : 'true'
+    const queryType = objectTypeName && objectTypeName + 'Query'
+    if (!queryType && !paramsFields) return []
     const attrs: string[] = []
-    if (queryType) attrs.push(`query?: ${queryType}`)
+    attrs.push(`query?: ${queryType || 'never'}`)
+    const paramsType = paramsFields ? `{ ${paramsFields} }` : 'never'
     attrs.push(`params${this.fieldParamsRequired(field) ? '' : '?'}: ${paramsType}`)
     return attrs
   }
@@ -167,7 +168,7 @@ export class Generator {
           if (objectTypeName) types.push(objectTypeName + 'Query')
         }
         const qparams = this.fieldQueryParams(field)
-        types.push(`{ field: never; ${qparams.join('; ')} }`)
+        if (qparams.length !== 0) types.push(`{ field?: never; ${qparams.join('; ')} }`)
         code.push(`  ${name}: ${types.join(' | ')}`)
       }
       if (acceptWildcard) code.push('  "*": true')
