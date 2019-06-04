@@ -12,12 +12,12 @@ type Result = DataTypeFromRootQuery<typeof query>
 
 You don't need to write types by yourself anymore.
 
-You don't need to re-generate types each time you edit a query.
+You don't need to re-generate type files each time you edit a query.
 
 ## 1. Generate type from schema.graphql
 
 ```sh
-% node dist/generator.js foobar/schema.graphql > foo/bar/generated_types.ts
+% gql-sparrow-gen foobar/schema.graphql > foo/bar/generated_types.ts
 ```
 
 If you have custom scalar types, define it to `foo/bar/customScalarTypes.ts`
