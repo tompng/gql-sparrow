@@ -15,7 +15,7 @@ isOK<IsEqual<
 >>()
 isOK<IsEqual<
   DataTypeFromRootQuery<{ field: 'feed'; query: ['id', 'title'] }>,
-  { id: number; title: string }[]
+  { id: string; title: string }[]
 >>()
 
 isOK<IsEqual<
@@ -27,12 +27,12 @@ isOK<IsEqual<
       title: true,
       content: true
       location: true
-      foobar: { params: { id: 1 } }
+      foobar: { params: { id: '1' } }
     }
   }>,
   {
-    ID: number
-    author: { id: number; name: string | null; email: string }
+    ID: string
+    author: { id: string; name: string | null; email: string }
     title: string
     content: string | null
     location: { lon: number; lat: number } | null
@@ -41,14 +41,14 @@ isOK<IsEqual<
 >>()
 
 isOK<IsEqual<
-  DataTypeFromRootQuery<{ field: 'post'; params: { id: 1 }; query: {
-    id: { field: 'title' }
+  DataTypeFromRootQuery<{ field: 'post'; params: { id: '1' }; query: {
+    id: { field: 'content' }
     id2: { field: 'id' }
-    title: { field: 'id' }
+    content: { field: 'id' }
     foobar: { field: 'id' }
-    author: { field: 'foobar'; params: { id: 1 } }
+    author: { field: 'foobar'; params: { id: '1' } }
   } }>,
-  { id: string; title: number; id2: number; foobar: number; author: string }
+  { id: string | null; content: string; id2: string; foobar: string; author: string }
 >>()
 
 isOK<IsEqual<DataTypeFromRootMutation<{
@@ -56,5 +56,5 @@ isOK<IsEqual<DataTypeFromRootMutation<{
     params: { title: 'newpost', content: 'hello', location: { lon: 0, lat: 0 } },
     query: 'id'
   }>,
-  { id: number }
+  { id: string }
 >>()

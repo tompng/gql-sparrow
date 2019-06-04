@@ -79,8 +79,9 @@ export class Generator {
 
   dataTypes() {
     const code: string[] = []
-    const scalarNames = ['TypeID', ...this.scalarDefinitions.map(d => 'Type' + d.name.value)]
+    const scalarNames = this.scalarDefinitions.map(d => 'Type' + d.name.value)
     code.push(`import { ${scalarNames.join(', ')} } from "./customScalarTypes"`)
+    code.push('type TypeID = string')
 
     for (const definition of this.enumDefinitions) {
       const values = definition.values.map(type => JSON.stringify(type.name.value))
