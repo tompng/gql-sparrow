@@ -209,7 +209,7 @@ export class Generator {
     const mutation = this.findDefinition('Mutation')
     if (!query) throw 'type Query not found in schema'
     return [
-      'import { DataTypeFromRequest } from "typed-gqlbuilder/DataType"',
+      'import { DataTypeFromRequest } from "gql-sparrow/DataType"',
       this.dataTypes() + '\n',
       this.queryTypes() + '\n',
       this.rootTypes('Query', query) + '\n',

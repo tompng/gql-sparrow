@@ -1,9 +1,9 @@
 {
-  "name": "typed-gqlbuilder",
+  "name": "gql-sparrow",
   "scripts": {
     "prepare": "tsc",
     "build": "tsc",
-    "generate": "typed-gqlbuilder-gen",
+    "generate": "gql-sparrow-gen",
     "ts-type-check": "tsc --strict --lib es2017 --noEmit",
     "test": "test/test.sh"
   },
@@ -12,6 +12,6 @@
     "graphql": "^14.2.1",
     "graphql-tag": "^2.10.1",
     "typescript": "^3.4.5",
-    "typed-gqlbuilder": "./dist/"
+    "gql-sparrow": "./dist/"
   }
 }

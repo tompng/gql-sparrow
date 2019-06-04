@@ -1,9 +1,25 @@
-# GraphQL Query Builder for typescript
+# gql-sparrow
+![logo](logo.svg)
+
+A GraphQL Query Builder for typescript.
+
+Write query once. Types are automatically calculated.
+
+```ts
+const query = { field: 'feed', query: { id: true, title: true, author: ['id', 'name'] } } as const
+const gqlQuery = buildQuery(query)
+type Result = DataTypeFromRootQuery<typeof query>
+// { id: number; title: string; author: { id: number; name: string } }[]
+```
+
+You don't need to write types by yourself anymore.
+
+You don't need to re-generate type files each time you edit a query.
 
 ## 1. Generate type from schema.graphql
 
 ```sh
-% node dist/generator.js foobar/schema.graphql > foo/bar/generated_types.ts
+% gql-sparrow-gen foobar/schema.graphql > foo/bar/generated_types.ts
 ```
 
 If you have custom scalar types, define it to `foo/bar/customScalarTypes.ts`
@@ -14,8 +30,8 @@ export TypeFoo = number
 
 ## 2. Write glue code
 ```ts
+import { buidQuery } from 'gql-sparrow'
 import { DataTypeFromRootQuery, TypeRootQuery } from 'foo/bar/generated_types'
-import { buidQuery, buildMutationQuery } from '[gql_ts_tmp(may change)]'
 async function myExecuteQuery<Q extends TypeRootQuery>(query: Q) {
   const graphqlQuery = buildQuery(query)
   const result = await executeGraphQLByYourFavoriteLibrary(graphqlQuery)
@@ -79,6 +95,7 @@ const graphqlQuery = buildQuery(query)
 
 ```ts
 // Mutations
+import { buildMutationQuery } from 'gql-sparrow'
 import { DataTypeFromRootMutation, TypeRootMutation } from 'foo/bar/generated_types'
 const mutationQuery = { field: 'createPost', params: { title: 'aaa' }, query: ['id'] }
 const [graphqlMutationQuery, variables] = buildMutationQuery(mutationQuery)
