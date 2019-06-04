@@ -1,4 +1,5 @@
-# GraphQL Query Builder for typescript
+# GQL-Sparrow
+A GraphQL Query Builder for typescript
 
 ## 1. Generate type from schema.graphql
 
@@ -15,7 +16,7 @@ export TypeFoo = number
 ## 2. Write glue code
 ```ts
 import { DataTypeFromRootQuery, TypeRootQuery } from 'foo/bar/generated_types'
-import { buidQuery, buildMutationQuery } from '[gql_ts_tmp(may change)]'
+import { buidQuery } from 'gql-sparrow'
 async function myExecuteQuery<Q extends TypeRootQuery>(query: Q) {
   const graphqlQuery = buildQuery(query)
   const result = await executeGraphQLByYourFavoriteLibrary(graphqlQuery)
@@ -79,6 +80,7 @@ const graphqlQuery = buildQuery(query)
 
 ```ts
 // Mutations
+import { buildMutationQuery } from 'gql-sparrow'
 import { DataTypeFromRootMutation, TypeRootMutation } from 'foo/bar/generated_types'
 const mutationQuery = { field: 'createPost', params: { title: 'aaa' }, query: ['id'] }
 const [graphqlMutationQuery, variables] = buildMutationQuery(mutationQuery)

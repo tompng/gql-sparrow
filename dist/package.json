@@ -1,7 +1,7 @@
 {
-  "name": "typed-gqlbuilder",
+  "name": "gql-sparrow",
   "bin": {
-    "typed-gqlbuilder-gen": "./bin/typed-gqlbuilder-gen"
+    "gql-sparrow-gen": "./bin/gql-sparrow-gen"
   },
   "dependencies": {
     "graphql": "^14.2.1",

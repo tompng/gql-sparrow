@@ -1,4 +1,4 @@
-import { buildQuery, buildMutationQuery } from "typed-gqlbuilder"
+import { buildQuery, buildMutationQuery } from 'gql-sparrow'
 import gql from 'graphql-tag'
 
 function assertEqual(a: any, b: any) {
