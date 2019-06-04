@@ -1,5 +1,22 @@
-import { buildQuery } from "typed-gqlbuilder/buildQuery"
+import { buildQuery, buildMutation } from "typed-gqlbuilder/buildQuery"
 import gql from 'graphql-tag'
+
+function assertEqual(a: any, b: any) {
+  let ca = a
+  let cb = b
+  if (typeof a === 'object' || typeof b === 'object') {
+    ca = JSON.stringify(a)
+    cb = JSON.stringify(b)
+  }
+  if (ca == cb) {
+    console.log('ok')
+    return
+  }
+  console.log(a)
+  console.log('---')
+  console.log(b)
+  throw 'mismatch'
+}
 
 const query = {
   field: 'aaa',
@@ -65,12 +82,26 @@ const expectedQuery = `{
     }
   }
 }`
-
 const gqlQuery = buildQuery(query)
-if (gqlQuery != expectedQuery) {
-  console.log(gqlQuery)
-  console.log('---')
-  console.log(expectedQuery)
-  throw 'built wrong query'
-}
 gql(gqlQuery)
+assertEqual(gqlQuery, expectedQuery)
+
+const mutation = {
+  field: 'createDraft',
+  params: { title: 'newpost', content: 'hello', location: { lon: 0, lat: 0 } },
+  query: 'id'
+}
+const expectedMutation = `mutation {
+  createDraft(title: $title, content: $content, location: $location) {
+    id
+  }
+}`
+const expectedVariables = {
+  title: 'newpost',
+  content: 'hello',
+  location: { lon: 0, lat: 0 }
+}
+const [gqlMutation, gqlVariables] = buildMutation(mutation)
+gql(gqlMutation)
+assertEqual(gqlMutation, expectedMutation)
+assertEqual(gqlVariables, expectedVariables)

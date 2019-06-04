@@ -1,4 +1,4 @@
-import { DataTypeFromRootQuery } from './generated/types'
+import { DataTypeFromRootQuery, DataTypeFromMutation } from './generated/types'
 
 type IsEqual<T, U> = [T, U] extends [U, T] ? true : false
 function isOK<T extends true>(): T | undefined { return }
@@ -49,4 +49,12 @@ isOK<IsEqual<
     author: { field: 'foobar'; params: { id: 1 } }
   } }>,
   { id: string; title: number; id2: number; foobar: number; author: string }
+>>()
+
+isOK<IsEqual<DataTypeFromMutation<{
+    field: 'createDraft',
+    params: { title: 'newpost', content: 'hello', location: { lon: 0, lat: 0 } },
+    query: 'id'
+  }>,
+  { id: number }
 >>()
