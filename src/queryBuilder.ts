@@ -81,7 +81,7 @@ export function buildQuery(root: RootQuery, pretty: boolean = true): string {
   qstring.push('}')
   return qstring.join('\n')
 }
-export function buildMutation<M extends RootQuery>(mutation: M, pretty: boolean = true) {
+export function buildMutationQuery<M extends RootQuery>(mutation: M, pretty: boolean = true) {
   const qstring: string[] = []
   const sp = pretty ? ' ' : ''
   qstring.push(`mutation${sp}{`)

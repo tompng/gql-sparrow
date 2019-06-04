@@ -1,4 +1,4 @@
-import { buildQuery, buildMutation } from "typed-gqlbuilder/buildQuery"
+import { buildQuery, buildMutationQuery } from "typed-gqlbuilder"
 import gql from 'graphql-tag'
 
 function assertEqual(a: any, b: any) {
@@ -101,7 +101,7 @@ const expectedVariables = {
   content: 'hello',
   location: { lon: 0, lat: 0 }
 }
-const [gqlMutation, gqlVariables] = buildMutation(mutation)
+const [gqlMutation, gqlVariables] = buildMutationQuery(mutation)
 gql(gqlMutation)
 assertEqual(gqlMutation, expectedMutation)
 assertEqual(gqlVariables, expectedVariables)
