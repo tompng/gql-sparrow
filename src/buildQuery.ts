@@ -10,7 +10,7 @@ interface RootQuery {
 
 type TrueIsArrayType = (arg: any) => arg is Readonly<any[]> // to avoid isArray bug in ts 3.4.5
 
-function paramsToString(params: any, pretty: boolean = true, brace: boolean = true) {
+function paramsToString(params: any, pretty: boolean, brace: boolean = true) {
   const space = pretty ? ' ' : ''
   if (Array.isArray(params)) {
     return '[' + params.map(p => paramsToString(p, pretty)).join(',' + space) + ']'
@@ -26,10 +26,20 @@ function paramsToString(params: any, pretty: boolean = true, brace: boolean = tr
   }
   return JSON.stringify(params)
 }
+function paramsToVarString(params: object, pretty: boolean) {
+  const space = pretty ? ' ' : ''
+  const fields: string[] = []
+  for (const key in params) {
+    if (!key.match(/^[a-zA-Z0-9_]+$/)) throw `Invalid key in params: ${JSON.stringify(key)}`
+    fields.push(`${key}:${space}$${key}`)
+  }
+  return fields.join(',' + space)
+}
+
 function indentString(n: number) {
   return new Array(n).fill('  ').join('')
 }
-function partialQueryBuilder(name: string | null, query: Query, qstring: string[], indentSize: number, pretty: boolean) {
+function partialQueryBuilder(name: string | null, query: Query, qstring: string[], indentSize: number, pretty: boolean, useVarName: boolean = false) {
   const { field, query: attrQuery, params } = query
   const fieldHeaders: string[] = []
   const space = pretty ? ' ' : ''
@@ -40,7 +50,11 @@ function partialQueryBuilder(name: string | null, query: Query, qstring: string[
   } else {
     fieldHeaders.push(`${name || field}`)
   }
-  if (params) fieldHeaders.push(`(${paramsToString(params, pretty, false)})`)
+  if (useVarName) {
+    fieldHeaders.push(`(${paramsToVarString(params, pretty)})`)
+  } else if (params) {
+    fieldHeaders.push(`(${paramsToString(params, pretty, false)})`)
+  }
   if (!attrQuery || attrQuery === true) {
     qstring.push(indent + fieldHeaders.join(''))
     return
@@ -66,4 +80,12 @@ export function buildQuery(root: RootQuery, pretty: boolean = true): string {
   partialQueryBuilder(null, root, qstring, 1, pretty)
   qstring.push('}')
   return qstring.join('\n')
+}
+export function buildMutation<M extends RootQuery>(mutation: M, pretty: boolean = true) {
+  const qstring: string[] = []
+  const sp = pretty ? ' ' : ''
+  qstring.push(`mutation${sp}{`)
+  partialQueryBuilder(null, mutation, qstring, 1, pretty, true)
+  qstring.push('}')
+  return [qstring.join('\n'), mutation.params]
 }

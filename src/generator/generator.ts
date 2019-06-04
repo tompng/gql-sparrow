@@ -177,15 +177,16 @@ export class Generator {
     return code.join('\n')
   }
 
-  rootQueryTypes(rootDefinition: GQLObjectDefinition) {
+  rootTypes(type: 'Query' | 'Mutation', rootDefinition: GQLObjectDefinition | undefined) {
     const code: string[] = []
     function camelize(name: string) {
       return name.split('_').map(a => a[0].toUpperCase() + a.substr(1)).join('')
     }
     const rootFields: { field: string; query: string }[] = []
-    for (const field of rootDefinition.fields) {
+    const fields = rootDefinition ? rootDefinition.fields : []
+    for (const field of fields) {
       const name = field.name.value
-      const queryName = `TypeRoot${camelize(name)}Query`
+      const queryName = `TypeRoot${camelize(name)}${type}`
       rootFields.push({ field: name, query: queryName })
       const attr = [
         `field: "${name}"`,
@@ -195,7 +196,7 @@ export class Generator {
       code.push(`export interface ${queryName} { ${attr.join('; ')} }`)
     }
     code.push(
-      'export interface TypeRootFields {',
+      `export interface TypeRoot${type}Fields {`,
       ...rootFields.map(({ field, query }) => `  ${field}: ${query}`),
       '}'
     )
@@ -204,16 +205,19 @@ export class Generator {
 
   generate() {
     const query = this.findDefinition('Query')
-    // const mutation = this.findDefinition('Mutation')
+    const mutation = this.findDefinition('Mutation')
     if (!query) throw 'type Query not found in schema'
     return [
       'import { DataTypeFromRequest } from "typed-gqlbuilder/DataType"',
       this.dataTypes() + '\n',
       this.queryTypes() + '\n',
-      this.rootQueryTypes(query) + '\n',
+      this.rootTypes('Query', query) + '\n',
+      this.rootTypes('Mutation', mutation) + '\n',
       'type Values<T> = T extends { [K in keyof T]: infer U } ? U : never',
-      'export type DataTypeFromRootQuery<RQ extends Values<TypeRootFields>> =',
-      '  DataTypeFromRequest<TypeRootFields[RQ["field"]], RQ>',
+      'export type DataTypeFromRootQuery<RQ extends Values<TypeRootQueryFields>> =',
+      '  DataTypeFromRequest<TypeRootQueryFields[RQ["field"]], RQ>',
+      'export type DataTypeFromMutation<RQ extends Values<TypeRootMutationFields>> =',
+      '  DataTypeFromRequest<TypeRootMutationFields[RQ["field"]], RQ>',
     ].join('\n')
   }
 }
