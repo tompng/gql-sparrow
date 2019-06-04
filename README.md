@@ -1,5 +1,18 @@
-# GQL-Sparrow
-A GraphQL Query Builder for typescript
+# gql-sparrow
+A GraphQL Query Builder for typescript.
+
+Write query once. Types are automatically calculated.
+
+```ts
+const query = { field: 'feed', query: { id: true, title: true, author: ['id', 'name'] } } as const
+const gqlQuery = buildQuery(query)
+type Result = DataTypeFromRootQuery<typeof query>
+// { id: number; title: string; author: { id: number; name: string } }[]
+```
+
+You don't need to write types by yourself anymore.
+
+You don't need to re-generate types each time you edit a query.
 
 ## 1. Generate type from schema.graphql
 
@@ -15,8 +28,8 @@ export TypeFoo = number
 
 ## 2. Write glue code
 ```ts
-import { DataTypeFromRootQuery, TypeRootQuery } from 'foo/bar/generated_types'
 import { buidQuery } from 'gql-sparrow'
+import { DataTypeFromRootQuery, TypeRootQuery } from 'foo/bar/generated_types'
 async function myExecuteQuery<Q extends TypeRootQuery>(query: Q) {
   const graphqlQuery = buildQuery(query)
   const result = await executeGraphQLByYourFavoriteLibrary(graphqlQuery)
