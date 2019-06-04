@@ -214,9 +214,11 @@ export class Generator {
       this.rootTypes('Query', query) + '\n',
       this.rootTypes('Mutation', mutation) + '\n',
       'type Values<T> = T extends { [K in keyof T]: infer U } ? U : never',
-      'export type DataTypeFromRootQuery<RQ extends Values<TypeRootQueryFields>> =',
+      'export type TypeRootQuery = Values<TypeRootQueryFields>',
+      'export type TypeRootMutation = Values<TypeRootMutationFields>',
+      'export type DataTypeFromRootQuery<RQ extends TypeRootQuery> =',
       '  DataTypeFromRequest<TypeRootQueryFields[RQ["field"]], RQ>',
-      'export type DataTypeFromMutation<RQ extends Values<TypeRootMutationFields>> =',
+      'export type DataTypeFromRootMutation<RQ extends TypeRootMutation> =',
       '  DataTypeFromRequest<TypeRootMutationFields[RQ["field"]], RQ>',
     ].join('\n')
   }
