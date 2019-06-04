@@ -1,4 +1,6 @@
 # gql-sparrow
+![logo](logo.svg)
+
 A GraphQL Query Builder for typescript.
 
 Write query once. Types are automatically calculated.
