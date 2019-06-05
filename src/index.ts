@@ -1,1 +1,1 @@
-export { buildQuery } from './buildQuery'
+export { buildQuery, buildMutationQuery } from './buildQuery'

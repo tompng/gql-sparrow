@@ -1,4 +1,4 @@
-import { buildQuery } from 'gql-sparrow'
+import { buildQuery, buildMutationQuery } from 'gql-sparrow'
 import gql from 'graphql-tag'
 
 function assertEqual(a: any, b: any) {
@@ -106,6 +106,6 @@ const expectedMutation = `mutation {
     text
   }
 }`
-const gqlMutationQuery = buildQuery(mutation, { type: 'mutation' })
+const gqlMutationQuery = buildMutationQuery(mutation)
 gql(gqlMutationQuery)
 assertEqual(gqlMutationQuery, expectedMutation)

@@ -84,3 +84,7 @@ export function buildQuery(query: AttributeQuery, option?: BuildQueryOption): st
   qstring.push('}')
   return qstring.join('\n')
 }
+
+export function buildMutationQuery(query: AttributeQuery, option?: { pretty?: boolean }) {
+  return buildQuery(query, { ...option, type: 'mutation' })
+}
