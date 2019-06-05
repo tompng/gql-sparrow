@@ -7,5 +7,5 @@ npm run generate test/schema.graphql test/generated/types.ts
 npm run ts-type-check test/typeTest.ts
 
 # builder test
-npm run build test/builderTest.ts
-node test/builderTest.js
+npm run build test/buildQueryTest.ts
+node test/buildQueryTest.js

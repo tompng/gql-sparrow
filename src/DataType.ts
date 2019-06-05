@@ -50,11 +50,18 @@ type _DataTypeFromQuery<BaseType, QueryType> = QueryType extends keyof BaseType 
   ? DataTypeExtractFieldsFromQuery<BaseType, Values<QueryType>>
   : DataTypeExtractFromQueryHash<BaseType, QueryType>
 
-export type DataTypeFromQuery<BaseType, QueryType> = BaseType extends any[]
-  ? CheckAttributesField<BaseType[0], QueryType>[]
-  : null extends BaseType
-  ? CheckAttributesField<BaseType & {}, QueryType> | null
+type CheckIsArray<BaseType, QueryType> = BaseType extends (infer Type)[]
+  ? (
+    null extends Type
+    ? (CheckAttributesField<Exclude<Type, null>, QueryType> | null)
+    : CheckAttributesField<Type, QueryType>
+  )[]
   : CheckAttributesField<BaseType, QueryType>
+
+export type DataTypeFromQuery<BaseType, QueryType> =
+  null extends BaseType
+  ? CheckIsArray<Exclude<BaseType, null>, QueryType> | null
+  : CheckIsArray<BaseType, QueryType>
 
 type CheckAttributesField<P, Q> = Q extends { query: infer R }
   ? _DataTypeFromQuery<P, R>
@@ -74,7 +81,7 @@ type SelectString<T> = T extends string ? T : never
 type _ValidateDataTypeExtraFileds<Extra, Type> = SelectString<Values<Extra>> extends never
   ? Type
   : { error: { extraFields: SelectString<Values<Extra>> } }
-type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<CollectExtraFields<Type, []>, Type>
+export type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<CollectExtraFields<Type, []>, Type>
 
 type RequestBase = { field: string; query?: any; params?: any; _meta?: { data: any } }
 type DataTypeBaseFromRequestType<R> = R extends { _meta?: { data: infer DataType } } ? DataType : never
