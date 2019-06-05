@@ -32,6 +32,14 @@ function typeToTS(type: GQLType, nonnull = false): string {
   }
 }
 
+const TypeNameOverrides = {
+  Query: 'TypeQueryObject',
+  Mutation: 'TypeMutationObject'
+}
+
+const QueryNameOverrides = {
+  Query: 'TypeRootQuery'
+}
 export class Generator {
   scalarDefinitions: GQLScalarDefinition[] = []
   objectDefinitions: GQLObjectDefinition[] = []
@@ -87,14 +95,16 @@ export class Generator {
       code.push(`export type Type${definition.name.value} = ${values.join(' | ')}`)
     }
     for (const definition of this.objectDefinitions) {
-      const typeName = `Type${definition.name.value}`
+      const name = definition.name.value
+      const typeName = TypeNameOverrides[name] || `Type${name}`
+      const queryName = QueryNameOverrides[name] || `Type${name}Query`
       const fieldDefinitions = definition.fields.map(field =>
         `  ${field.name.value}: ${typeToTS(field.type)}`
       )
       code.push(
         `export interface ${typeName} {`,
         ...fieldDefinitions,
-        `  _meta?: { query: ${typeName}Query }`,
+        `  _meta?: { query: ${queryName} }`,
         '}'
       )
     }
@@ -105,7 +115,7 @@ export class Generator {
     if (type.kind === 'NonNullType' || type.kind === 'ListType') return this.extractNamedType(type.type)
     if (type.kind !== 'NamedType') return
     const name = type.name.value
-    if (this.objectTypeNames.has(name)) return `Type${name}`
+    if (this.objectTypeNames.has(name)) return TypeNameOverrides[name] || `Type${name}`
   }
 
   fieldParamsRequired(field: GQLField) {
@@ -126,10 +136,11 @@ export class Generator {
 
   queryTypes() {
     const code: string[] = []
+    const nameOverrides = { Query: 'Root' }
     code.push('type NonAliasQuery = true | false | string | string[] | ({ field?: undefined } & { [key: string]: any })')
     for (const definition of this.objectDefinitions) {
-      const name = definition.name.value
-      const typeName = `Type${name}Query`
+      const name = nameOverrides[definition.name.value] || definition.name.value
+      const typeName = QueryNameOverrides[name] || `Type${name}Query`
       const baseName = `Type${name}QueryBase`
       const aliasQueryName = `Type${name}AliasFieldQuery`
       const standaloneName = `Type${name}StandaloneFields`
@@ -180,10 +191,10 @@ export class Generator {
       'import { ValidateDataTypeExtraFileds, DataTypeFromQuery as DataTypeFromDataAndQuery } from "gql-sparrow/DataType"',
       this.dataTypes() + '\n',
       this.queryTypes() + '\n',
-      'export type DataTypeFromQuery<RQ extends TypeQueryQuery> =',
-      '  ValidateDataTypeExtraFileds<DataTypeFromDataAndQuery<TypeQuery, RQ>>',
+      'export type DataTypeFromQuery<RQ extends TypeRootQuery> =',
+      '  ValidateDataTypeExtraFileds<DataTypeFromDataAndQuery<TypeQueryObject, RQ>>',
       'export type DataTypeFromMutation<RQ extends TypeMutationQuery> =',
-      '  ValidateDataTypeExtraFileds<DataTypeFromDataAndQuery<TypeMutation, RQ>>',
+      '  ValidateDataTypeExtraFileds<DataTypeFromDataAndQuery<TypeMutationObject, RQ>>',
     ].join('\n')
   }
 }
