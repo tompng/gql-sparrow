@@ -68,3 +68,8 @@ isOK<IsEqual<DataTypeFromMutation<{
   }>,
   { createDraft: { id: string } }
 >>()
+
+isOK<IsEqual<
+  DataTypeFromQuery<{ feed: { id: true, author: { id: true, namae: true }, titleee: true } }>,
+  { error: { extraFields: 'namae' | 'titleee' } }
+>>()
