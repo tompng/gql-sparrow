@@ -32,11 +32,6 @@ function typeToTS(type: GQLType, nonnull = false): string {
   }
 }
 
-function isTypeMultiple(type: GQLType): boolean {
-  if (type.kind === 'NonNullType') return isTypeMultiple(type.type)
-  return type.kind === 'ListType'
-}
-
 export class Generator {
   scalarDefinitions: GQLScalarDefinition[] = []
   objectDefinitions: GQLObjectDefinition[] = []
@@ -178,49 +173,17 @@ export class Generator {
     return code.join('\n')
   }
 
-  rootTypes(type: 'Query' | 'Mutation', rootDefinition: GQLObjectDefinition | undefined) {
-    const code: string[] = []
-    function camelize(name: string) {
-      return name.split('_').map(a => a[0].toUpperCase() + a.substr(1)).join('')
-    }
-    const rootFields: { field: string; query: string }[] = []
-    const fields = rootDefinition ? rootDefinition.fields : []
-    for (const field of fields) {
-      const name = field.name.value
-      const queryName = `TypeRoot${camelize(name)}${type}`
-      rootFields.push({ field: name, query: queryName })
-      const attr = [
-        `field: "${name}"`,
-        ...this.fieldQueryParams(field),
-        `_meta?: { data: ${this.extractNamedType(field.type)}${isTypeMultiple(field.type) ? '[]' : ''} }`
-      ]
-      code.push(`export interface ${queryName} { ${attr.join('; ')} }`)
-    }
-    code.push(
-      `export interface TypeRoot${type}Fields {`,
-      ...rootFields.map(({ field, query }) => `  ${field}: ${query}`),
-      '}'
-    )
-    return code.join('\n')
-  }
-
   generate() {
     const query = this.findDefinition('Query')
-    const mutation = this.findDefinition('Mutation')
     if (!query) throw 'type Query not found in schema'
     return [
-      'import { DataTypeFromRequest } from "gql-sparrow/DataType"',
+      'import { ValidateDataTypeExtraFileds, DataTypeFromQuery as DataTypeFromDataAndQuery } from "gql-sparrow/DataType"',
       this.dataTypes() + '\n',
       this.queryTypes() + '\n',
-      this.rootTypes('Query', query) + '\n',
-      this.rootTypes('Mutation', mutation) + '\n',
-      'type Values<T> = T extends { [K in keyof T]: infer U } ? U : never',
-      'export type TypeRootQuery = Values<TypeRootQueryFields>',
-      'export type TypeRootMutation = Values<TypeRootMutationFields>',
-      'export type DataTypeFromRootQuery<RQ extends TypeRootQuery> =',
-      '  DataTypeFromRequest<TypeRootQueryFields[RQ["field"]], RQ>',
-      'export type DataTypeFromRootMutation<RQ extends TypeRootMutation> =',
-      '  DataTypeFromRequest<TypeRootMutationFields[RQ["field"]], RQ>',
+      'export type DataTypeFromQuery<RQ extends TypeQueryQuery> =',
+      '  ValidateDataTypeExtraFileds<DataTypeFromDataAndQuery<TypeQuery, RQ>>',
+      'export type DataTypeFromMutation<RQ extends TypeMutationQuery> =',
+      '  ValidateDataTypeExtraFileds<DataTypeFromDataAndQuery<TypeMutation, RQ>>',
     ].join('\n')
   }
 }
