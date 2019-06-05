@@ -16,10 +16,14 @@ You don't need to write types by yourself anymore.
 
 You don't need to re-generate type files each time you edit a query.
 
+```sh
+% npm install [package-name-here] # not published to npm yet
+```
+
 ## 1. Generate type from schema.graphql
 
 ```sh
-% gql-sparrow-gen foobar/schema.graphql > foo/bar/generated_types.ts
+% gql-sparrow-gen foobar/schema.graphql foo/bar/generated_types.ts
 ```
 
 If you have custom scalar types, define it to `foo/bar/customScalarTypes.ts`
