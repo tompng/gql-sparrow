@@ -77,10 +77,10 @@ type _CollectExtraFields<Type> = keyof (Type) extends never
   ? null
   : Values<{ [key in keyof Type]: CollectExtraFields<Type[key], [key]> }>
 
-type _ValidateDataTypeExtraFileds<Extra, Type> = Values<Exclude<Extra, null>> extends never
+type _ValidateDataTypeExtraFileds<Extra, Type> = Values<Extra> extends never
   ? Type
-  : { error: { extraFields: Values<Exclude<Extra, null>> } }
-export type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<CollectExtraFields<Type, []>, Type>
+  : { error: { extraFields: Values<Extra> } }
+export type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<Exclude<CollectExtraFields<Type, []>, null>, Type>
 
 type RequestBase = { field: string; query?: any; params?: any; _meta?: { data: any } }
 type DataTypeBaseFromRequestType<R> = R extends { _meta?: { data: infer DataType } } ? DataType : never
