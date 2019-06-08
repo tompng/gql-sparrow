@@ -77,10 +77,9 @@ type _CollectExtraFields<Type> = keyof (Type) extends never
   ? null
   : Values<{ [key in keyof Type]: CollectExtraFields<Type[key], [key]> }>
 
-type SelectString<T> = T extends string ? T : never
-type _ValidateDataTypeExtraFileds<Extra, Type> = SelectString<Values<Extra>> extends never
+type _ValidateDataTypeExtraFileds<Extra, Type> = Values<Exclude<Extra, null>> extends never
   ? Type
-  : { error: { extraFields: SelectString<Values<Extra>> } }
+  : { error: { extraFields: Values<Exclude<Extra, null>> } }
 export type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<CollectExtraFields<Type, []>, Type>
 
 type RequestBase = { field: string; query?: any; params?: any; _meta?: { data: any } }

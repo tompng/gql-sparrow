@@ -25,7 +25,7 @@ isOK<IsEqual<
       query: {
         ID: { field: 'id' }
         author: ['id', 'name', 'email']
-        title: true,
+        title: true
         content: true
         location: true
         foobar: { params: { id: '1' } }

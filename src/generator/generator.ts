@@ -137,7 +137,7 @@ export class Generator {
   queryTypes() {
     const code: string[] = []
     const nameOverrides = { Query: 'Root' }
-    code.push('type NonAliasQuery = true | false | string | string[] | ({ field?: undefined } & { [key: string]: any })')
+    code.push('type NonAliasQuery = true | string | string[] | ({ field?: undefined } & { [key: string]: any })')
     for (const definition of this.objectDefinitions) {
       const name = nameOverrides[definition.name.value] || definition.name.value
       const typeName = QueryNameOverrides[name] || `Type${name}Query`
