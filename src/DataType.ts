@@ -58,7 +58,7 @@ type CheckIsArray<BaseType, QueryType> = BaseType extends (infer Type)[]
   )[]
   : CheckAttributesField<BaseType, QueryType>
 
-export type DataTypeFromQuery<BaseType, QueryType> =
+type DataTypeFromQuery<BaseType, QueryType> =
   null extends BaseType
   ? CheckIsArray<Exclude<BaseType, null>, QueryType> | null
   : CheckIsArray<BaseType, QueryType>
@@ -80,10 +80,7 @@ type _CollectExtraFields<Type> = keyof (Type) extends never
 type _ValidateDataTypeExtraFileds<Extra, Type> = Values<Extra> extends never
   ? Type
   : { error: { extraFields: Values<Extra> } }
-export type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<Exclude<CollectExtraFields<Type, []>, null>, Type>
 
-type RequestBase = { field: string; query?: any; params?: any; _meta?: { data: any } }
-type DataTypeBaseFromRequestType<R> = R extends { _meta?: { data: infer DataType } } ? DataType : never
-export type DataTypeFromRequest<Req extends RequestBase, R extends RequestBase> = ValidateDataTypeExtraFileds<
-  DataTypeFromQuery<DataTypeBaseFromRequestType<Req>, R['query']>
->
+type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<Exclude<CollectExtraFields<Type, []>, null>, Type>
+
+export type DataTypeFromQueryPair<BaseType, QueryType> = ValidateDataTypeExtraFileds<DataTypeFromQuery<BaseType, QueryType>>

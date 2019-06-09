@@ -189,16 +189,16 @@ export class Generator {
     if (!query) throw 'type Query not found in schema'
     const mutation = this.findDefinition('Mutation')
     const definitions = [
-      'import { ValidateDataTypeExtraFileds, DataTypeFromQuery as DataTypeFromDataAndQuery } from "gql-sparrow/DataType"',
+      'import { DataTypeFromQueryPair } from "gql-sparrow/DataType"',
       this.dataTypes() + '\n',
       this.queryTypes() + '\n',
       'export type DataTypeFromQuery<RQ extends TypeRootQuery> =',
-      '  ValidateDataTypeExtraFileds<DataTypeFromDataAndQuery<TypeQueryObject, RQ>>',
+      '  DataTypeFromQueryPair<TypeQueryObject, RQ>',
     ]
     if (mutation) {
       definitions.push(
         'export type DataTypeFromMutation<RQ extends TypeMutationQuery> =',
-        '  ValidateDataTypeExtraFileds<DataTypeFromDataAndQuery<TypeMutationObject, RQ>>',
+        '  DataTypeFromQueryPair<TypeMutationObject, RQ>',
       )
     }
     return definitions.join('\n')
