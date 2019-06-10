@@ -109,3 +109,12 @@ const expectedMutation = `mutation {
 const gqlMutationQuery = buildMutationQuery(mutation)
 gql(gqlMutationQuery)
 assertEqual(gqlMutationQuery, expectedMutation)
+
+import { TypeRootQuery, DataTypeFromQuery } from './generated/types'
+async function executeGraphQLByYourFavoriteLibrary(_: string){ return null as unknown }
+async function myExecuteQuery<Q extends TypeRootQuery>(query: Q) {
+  const graphqlQuery = buildQuery(query)
+  const result = await executeGraphQLByYourFavoriteLibrary(graphqlQuery)
+  return result as DataTypeFromQuery<Q>
+}
+myExecuteQuery({})

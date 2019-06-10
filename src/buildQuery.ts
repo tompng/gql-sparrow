@@ -20,20 +20,11 @@ function paramsToString(params: any, pretty: boolean, brace: boolean = true) {
   }
   return JSON.stringify(params)
 }
-function paramsToVarString(params: object, pretty: boolean) {
-  const space = pretty ? ' ' : ''
-  const fields: string[] = []
-  for (const key in params) {
-    if (!key.match(/^[a-zA-Z0-9_]+$/)) throw `Invalid key in params: ${JSON.stringify(key)}`
-    fields.push(`${key}:${space}$${key}`)
-  }
-  return fields.join(',' + space)
-}
 
 function indentString(n: number) {
   return new Array(n).fill('  ').join('')
 }
-function buildPartialQuery(name: string | null, query: Query, qstring: string[], indentSize: number, pretty: boolean, useVarName: boolean = false) {
+function buildPartialQuery(name: string | null, query: Query, qstring: string[], indentSize: number, pretty: boolean) {
   const { field, query: attrQuery, params } = query
   const fieldHeaders: string[] = []
   const space = pretty ? ' ' : ''
@@ -44,9 +35,7 @@ function buildPartialQuery(name: string | null, query: Query, qstring: string[],
   } else {
     fieldHeaders.push(`${name || field}`)
   }
-  if (useVarName) {
-    fieldHeaders.push(`(${paramsToVarString(params, pretty)})`)
-  } else if (params) {
+  if (params) {
     fieldHeaders.push(`(${paramsToString(params, pretty, false)})`)
   }
   if (!attrQuery || attrQuery === true) {
@@ -76,15 +65,22 @@ export interface BuildQueryOption {
   pretty?: boolean
   type?: 'mutation' | 'query'
 }
-export function buildQuery(query: AttributeQuery, option?: BuildQueryOption): string {
+export function buildQuery(query: Exclude<QueryValue, true>, option?: BuildQueryOption): string {
   const { pretty, type } = { pretty: true, type: 'query', ...option }
   const qstring: string[] = []
-  qstring.push(`${type}${pretty ? ' ' : ''}{`)
-  buildAttributeQueryFields(query, qstring, 1, pretty)
-  qstring.push('}')
+  buildPartialQuery(type, { query }, qstring, 0, pretty)
   return qstring.join('\n')
 }
 
-export function buildMutationQuery(query: AttributeQuery, option?: { pretty?: boolean }) {
-  return buildQuery(query, { ...option, type: 'mutation' })
+export function buildMutationQuery(query: Exclude<QueryValue, true>, option?: { pretty?: boolean }) {
+  let attrQuery: AttributeQuery | null
+  if (typeof(query) === 'string') {
+    attrQuery = { [query]: true }
+  } else if ((Array.isArray as TrueIsArrayType)(query)) {
+    attrQuery = {}
+    for (const key of query) attrQuery[key] = true
+  } else {
+    attrQuery = query
+  }
+  return buildQuery(attrQuery, { ...option, type: 'mutation' })
 }

@@ -4,3 +4,4 @@ dist/**/*d.ts
 node_modules
 test/generated/types.ts
 test/*.js
+test/generated/*.js
