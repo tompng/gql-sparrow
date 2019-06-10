@@ -34,7 +34,7 @@ export TypeFoo = number
 
 ## 2. Write glue code
 ```ts
-import { buidQuery } from 'gql-sparrow'
+import { buildQuery } from 'gql-sparrow'
 import { DataTypeFromQuery, TypeRootQuery } from 'foo/bar/generated_types'
 async function myExecuteQuery<Q extends TypeRootQuery>(query: Q) {
   const graphqlQuery = buildQuery(query)
