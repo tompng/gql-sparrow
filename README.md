@@ -1,13 +1,14 @@
 # gql-sparrow
 ![logo](logo.svg)
 
-A GraphQL Query Builder for typescript.
+Typed GraphQL query builder for TypeScript.
 
-Write query once. Types are automatically calculated.
+Write query in plain JavaScript object. Types are automatically calculated.
 
 ```ts
 const query = { articles: { id: true, title: true, author: ['id', 'name'] } } as const
 const gqlQuery = buildQuery(query)
+// 'query {\n  articles {\n    id\n    title\n    author {\n      id\n      name\n    }\n  }\n}'
 type Result = DataTypeFromQuery<typeof query>
 // { articles: { id: number; title: string; author: { id: number; name: string } }[] }
 ```
@@ -43,7 +44,7 @@ async function myExecuteQuery<Q extends TypeRootQuery>(query: Q) {
 }
 ```
 
-## 3. Write query in plain javascript object
+## 3. Write query in plain JavaScript object
 ```ts
 const query = {
   articles: {
@@ -69,7 +70,7 @@ result.articles[0].author // => { name: string }
 const { article } = await myExecuteQuery({ article: { params: { id: 1 }, query: ['id', 'title'] } })
 article.id // => number
 article.title // => string
-article.author // => compile error
+article.author // => property `author` does not exist. compile error.
 ```
 
 ## Examples
@@ -114,7 +115,7 @@ const graphqlMutationQuery = buildMutationQuery(mutationQuery)
 ```
 
 ```ts
-// Warnings: if you specify an undefined field.
+// Warnings: when you specify an undefined field.
 const { article } = await myExecuteQuery({
   article: {
     params: { id: 1 },
@@ -131,4 +132,37 @@ const { article } = await myExecuteQuery({
 })
 article.id // compile error
 // typeof article is { error: { extraFields: 'titllllle' | 'creeeeeeatedAt' } }
+```
+
+## Formats
+```ts
+query = {
+  field1: true,
+  field2: subQuery, // 'subField' or ['subField1', ...] or { subField1: subSubQuery, ... }
+  field3: { params: parameters },
+  field4: { params: parameters, query: subQuery },
+  aliasField1: { field: 'field5' },
+  aliasField2: { field: 'field6', query: subQuery },
+  aliasField3: { field: 'field7', params: parameters, query: subQuery }
+}
+```
+
+```graphql
+query {
+  field1
+  field2 {
+    subField1
+  }
+  field3(id: 1)
+  field4(id: 2) {
+    subField2
+  }
+  aliasField1: field5
+  aliasField2: field6 {
+    subField3
+  }
+  aliasField3: field7(id: 3) {
+    subAliasField: subSubField
+  }
+}
 ```
