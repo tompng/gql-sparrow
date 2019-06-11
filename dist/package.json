@@ -1,10 +1,16 @@
 {
   "name": "gql-sparrow",
+  "version": "1.0.0",
+  "description": "Typed GraphQL query builder for TypeScript.",
   "bin": {
     "gql-sparrow-gen": "./bin/gql-sparrow-gen"
   },
+  "keywords": ["GraphQL"],
+  "author": "Tomoya Ishida",
+  "license": "MIT",
+  "homepage": "https://github.com/tompng/gql-sparrow",
   "dependencies": {
-    "graphql": "^14.2.1",
-    "graphql-tag": "^2.10.1"
+    "graphql": "*",
+    "graphql-tag": "*"
   }
 }
