@@ -18,7 +18,7 @@ You don't need to write types by yourself anymore.
 You don't need to re-generate type files each time you edit a query.
 
 ```sh
-% npm install [package-name-here] # not published to npm yet
+% npm install gql-sparrow
 ```
 
 ## 1. Generate type from schema.graphql
