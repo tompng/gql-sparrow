@@ -1,6 +1,7 @@
 import { DataTypeFromQuery, DataTypeFromMutation } from './generated/types'
 
-type IsEqual<T, U> = [T, U] extends [U, T] ? true : false
+type IsNotAny<T> = { _i_am_any: never } extends T ? false : true
+type IsEqual<T, U> = [T, U] extends [U, T] ? IsNotAny<T | U> : false
 function isOK<T extends true>(): T | undefined { return }
 type IsStrictMode = string | null extends string ? false : true
 isOK<IsStrictMode>()
