@@ -74,3 +74,8 @@ isOK<IsEqual<
   DataTypeFromQuery<{ feed: { id: true, author: { id: true, namae: true }, titleee: true } }>,
   { error: { extraFields: 'namae' | 'titleee' } }
 >>()
+
+isOK<IsEqual<
+  DataTypeFromQuery<{ post: { params: { id: '1' }, query: { idd: true, titleee: true } } }>,
+  { error: { extraFields: 'idd' | 'titleee' } }
+>>()

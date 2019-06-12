@@ -71,16 +71,16 @@ type IsAnyCompareLeftType = { __any: never }
 
 type CollectExtraFields<Type, Path> = ExtraFieldErrorType extends Type
   ? (IsAnyCompareLeftType extends Type ? null : Path)
-  : _CollectExtraFields<Type extends (infer R)[] ? R : (Type extends object ? Type : null)>
+  : _CollectExtraFields<Type extends (infer R)[] ? Exclude<R, null> : (Type extends object ? Type : null)>
 
 type _CollectExtraFields<Type> = keyof (Type) extends never
   ? null
-  : Values<{ [key in keyof Type]: CollectExtraFields<Type[key], [key]> }>
+  : Values<{ [key in keyof Type]: CollectExtraFields<Exclude<Type[key], null>, [key]> }>
 
 type _ValidateDataTypeExtraFileds<Extra, Type> = Values<Extra> extends never
   ? Type
   : { error: { extraFields: Values<Extra> } }
 
-type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<Exclude<CollectExtraFields<Type, []>, null>, Type>
+type ValidateDataTypeExtraFileds<Type> = _ValidateDataTypeExtraFileds<Exclude<CollectExtraFields<Exclude<Type, null>, []>, null>, Type>
 
 export type DataTypeFromQueryPair<BaseType, QueryType> = ValidateDataTypeExtraFileds<DataTypeFromQuery<BaseType, QueryType>>
