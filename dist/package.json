@@ -1,6 +1,6 @@
 {
   "name": "gql-sparrow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Typed GraphQL query builder for TypeScript.",
   "bin": {
     "gql-sparrow-gen": "./bin/gql-sparrow-gen"
