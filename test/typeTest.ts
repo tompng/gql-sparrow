@@ -61,6 +61,45 @@ isOK<IsEqual<
   { post: { id: string | null; content: string; id2: string; foobar: string; author: string } | null }
 >>()
 
+isOK<IsEqual<
+  DataTypeFromQuery<{
+    post: {
+      params: {id: '1' }
+      query: {
+        author: 'name'
+        author1: { field: 'author'; query: 'name' }
+        author2: { field: 'author'; query: ['name'] }
+        author3: { field: 'author'; query: { name: true } }
+        maybeAuthor: 'name'
+        maybeAuthor1: {
+          field: 'maybeAuthor'
+          query: 'name'
+        }
+        maybeAuthor2: {
+          field: 'maybeAuthor'
+          query: ['name']
+        }
+        maybeAuthor3: {
+          field: 'maybeAuthor'
+          query: { name: true }
+        }
+      }
+    }
+  }>,
+  {
+    post: {
+      author: { name: string | null }
+      author1: { name: string | null }
+      author2: { name: string | null }
+      author3: { name: string | null }
+      maybeAuthor: { name: string | null } | null
+      maybeAuthor1: { name: string | null } | null
+      maybeAuthor2: { name: string | null } | null
+      maybeAuthor3: { name: string | null } | null
+    } | null
+  }
+>>()
+
 isOK<IsEqual<DataTypeFromMutation<{
     createDraft: {
       params: { title: 'newpost', content: 'hello', location: { lon: 0, lat: 0 } },
