@@ -4,7 +4,7 @@ type Query = { field?: string; query?: QueryValue; params?: any }
 type AttributeQuery = { [key: string]: AttributeQueryValue }
 type TrueIsArrayType = (arg: any) => arg is Readonly<any[]> // to avoid isArray bug in ts 3.4.5
 
-function paramsToString(params: any, pretty: boolean, brace: boolean = true) {
+function paramsToString(params: any, pretty: boolean, brace: boolean = true): string {
   const space = pretty ? ' ' : ''
   if (Array.isArray(params)) {
     return '[' + params.map(p => paramsToString(p, pretty)).join(',' + space) + ']'
