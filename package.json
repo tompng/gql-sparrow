@@ -11,7 +11,7 @@
     "@types/node": "*",
     "graphql": "^14.2.1",
     "graphql-tag": "^2.10.1",
-    "typescript": "^3.5.1",
-    "gql-sparrow": "./dist/"
+    "gql-sparrow": "./dist/",
+    "typescript": "3.7.2"
   }
 }

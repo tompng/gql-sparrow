@@ -22,6 +22,7 @@ type Post {
   title: String!
   content: String
   author: User!
+  maybeAuthor: User
   location: Location
   foobar(id: ID!): String!
 }

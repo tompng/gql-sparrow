@@ -32,12 +32,12 @@ function typeToTS(type: GQLType, nonnull = false): string {
   }
 }
 
-const TypeNameOverrides = {
+const TypeNameOverrides: Record<string, string> = {
   Query: 'TypeQueryObject',
   Mutation: 'TypeMutationObject'
 }
 
-const QueryNameOverrides = {
+const QueryNameOverrides: Record<string, string> = {
   Query: 'TypeRootQuery'
 }
 export class Generator {
@@ -111,7 +111,7 @@ export class Generator {
     return code.join("\n")
   }
 
-  extractNamedType(type: GQLType) {
+  extractNamedType(type: GQLType): string | undefined {
     if (type.kind === 'NonNullType' || type.kind === 'ListType') return this.extractNamedType(type.type)
     if (type.kind !== 'NamedType') return
     const name = type.name.value
@@ -136,7 +136,7 @@ export class Generator {
 
   queryTypes() {
     const code: string[] = []
-    const nameOverrides = { Query: 'Root' }
+    const nameOverrides: Record<string, string> = { Query: 'Root' }
     code.push('type NonAliasQuery = true | string | string[] | ({ field?: undefined } & { [key: string]: any })')
     for (const definition of this.objectDefinitions) {
       const name = nameOverrides[definition.name.value] || definition.name.value
